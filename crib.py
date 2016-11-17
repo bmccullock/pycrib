@@ -69,6 +69,21 @@ class Deck:
 			else:
 				player_2.add_card(self.cards.pop(0))
 
+	def numerical_ranks(self):
+		num_ranks = []
+		for rank in [c[0] for c in self.cards]:
+			if rank == 'A':
+				num_ranks.append(1)
+			elif rank == 'J':
+				num_ranks.append(11)
+			elif rank == 'Q':
+				num_ranks.append(12)
+			elif rank == 'K':
+				num_ranks.append(13)
+			else:
+				num_ranks.append(int(rank))
+		return sorted(num_ranks)
+
 class Hand(Deck):
 
 	def __init__(self):
@@ -111,13 +126,40 @@ class Hand(Deck):
 		return
 
 	def count_runs(self):
-		
-		return
+		#ranks = self.numerical_ranks()
+		ranks = [6, 11, 12, 5]
+		run_of_5 = False
+		run_of_4 = False
+		run_of_3 = False
+				# check for runs of 4
+		run_tally = 0
+		for i in range(len(ranks)):
+			j = i + 1
+			if j == len(ranks):
+				break
+			else:
+				if ranks[j] - ranks[i] == 1:
+					run_tally += 1
+				else:
+					pass
+		if run_tally == 4:
+			run_of_5 = True
+		if run_tally == 3:
+			run_of_4 = True
+		if run_tally == 2:
+			run_of_3 = True
+
+		print('Run of 5: {}'.format(run_of_5))
+		print('Run of 4: {}'.format(run_of_4))
+		print('Run of 3: {}'.format(run_of_3))
+		print(run_tally)
+
+		return run_tally
+
 
 	def count_flush(self):
 		suits = [c[1] for c in self.cards]
 		c = Counter(suits).most_common(4)
-		print(c)
 		for i in c:
 			if i[1] == 4 or i[1] == 5:
 				self.score['flush'] = 4
@@ -128,6 +170,10 @@ class Hand(Deck):
 
 	def total_hand_value(self):
 		return sum(c.value() for c in self.cards)
+
+	def score_hand(self):
+		return
+
 
 if __name__ == '__main__':
 	d = Deck()
@@ -159,5 +205,8 @@ if __name__ == '__main__':
 
 	print('P1 Score: {}'.format(p1.score))
 	print('P2 Score: {}'.format(p2.score))
+
+	p1.count_runs()
+	print(p1.count_runs())
 
 	
