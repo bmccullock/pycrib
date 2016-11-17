@@ -125,36 +125,16 @@ class Hand(Deck):
 		self.score['pair'] = 2 * pair_count
 		return
 
-	def count_runs(self):
-		#ranks = self.numerical_ranks()
-		ranks = [6, 11, 12, 5]
-		run_of_5 = False
-		run_of_4 = False
-		run_of_3 = False
-				# check for runs of 4
-		run_tally = 0
-		for i in range(len(ranks)):
-			j = i + 1
-			if j == len(ranks):
-				break
-			else:
-				if ranks[j] - ranks[i] == 1:
-					run_tally += 1
-				else:
-					pass
-		if run_tally == 4:
-			run_of_5 = True
-		if run_tally == 3:
-			run_of_4 = True
-		if run_tally == 2:
-			run_of_3 = True
+	def count_runs(self, run_length):
+		has_run = False
+		combos = [sorted(list(set(c))) for c in itertools.combinations(self.numerical_ranks(), run_length)]
 
-		print('Run of 5: {}'.format(run_of_5))
-		print('Run of 4: {}'.format(run_of_4))
-		print('Run of 3: {}'.format(run_of_3))
-		print(run_tally)
-
-		return run_tally
+		for combo in combos:
+			print(combo)
+			if len(combo) >= run_length:
+				if len(combo) == (combo[-1] - combo[0] + 1):
+					has_run = True
+		return has_run
 
 
 	def count_flush(self):
@@ -206,7 +186,9 @@ if __name__ == '__main__':
 	print('P1 Score: {}'.format(p1.score))
 	print('P2 Score: {}'.format(p2.score))
 
-	p1.count_runs()
-	print(p1.count_runs())
+	p1.count_runs(4)
+	print(p1.count_runs(4))
+
+
 
 	
