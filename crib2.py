@@ -106,6 +106,9 @@ class Hand(Deck):
 		the highest point score for the remaining four cards.
 
 		TODO:
+		  >>Adjust discard strategy according to which player is currently the 
+			dealer (has the crib).
+		  >>Weight and apply various discard strategies.
 
 		'''
 
@@ -126,7 +129,7 @@ class Hand(Deck):
 		return
 
 	def ranks(self):
-		'''Return a list coontaining only numerical ranks of cards in hand'''
+		'''Return a list containing only numerical ranks of cards in hand'''
 		return [c[0] for c in self.cards]
 
 	def suits(self):
@@ -220,8 +223,9 @@ class Game(object):
 	def __init__(self):
 		super(Game, self).__init__()
 		self.deck = Deck()
-		self.score = dict.fromkeys(['p1', 'p2'], 0)
+		self.score = dict.fromkeys(['p1', 'p2'], 0) # Should this be a view?
 		self.history = []
+		self.winner = True in [self.score[p] >= 121 for p in self.score.keys()]
 
 	def run(self):
 		'''Simulate a cribbage game, playing rounds until one player reaches the 
@@ -229,24 +233,25 @@ class Game(object):
 
 		'''
 		round_num = 1
+		print(self.winner)
 		while (self.score['p1'] < 121) and (self.score['p2'] < 121):
 			
 			print('Round: {}'.format(round_num))
 			# Play a round
-			round = self.play_round(round_num)
+			round = self.round(round_num)
 			for p in self.score.keys():
-				print('{} {}'.format(round[p]['hand'], round['starter']))
-				print('{}: {} ({})'.format(p, round[p]['score'], round[p]['crib']))
 				self.score[p] += round[p]['score']
 			round_num += 1
 		print(self.score)
+		print(self.winner)
 
-	def play_round(self, round_num):
+	def round(self, round_num):
 		'''Plays a single round of cribbage. Deals two hands, discards to the 
 		crib, scores hands (and crib), and update the score for each player.
 
 		TODO:
-			Pegging - Players 
+			Pegging
+
 		'''
 		round = {
 			'p1': {
@@ -270,7 +275,7 @@ class Game(object):
 		self.deal(p1_hand, p2_hand)
 
 		# Discard phase...send two cards to crib
-		self.crib(p1_hand, p2_hand, crib)
+		self.the_crib(p1_hand, p2_hand, crib)
 
 		round['p1']['hand'] = p1_hand
 		round['p2']['hand'] = p2_hand
@@ -301,15 +306,13 @@ class Game(object):
 
 		for p in ['p1', 'p2']:
 			if round[p]['crib'] == True:
-				round[p]['score'] += g.score_hand(crib)[0]
+				round[p]['score'] += self.score_hand(crib)[0]
 
 		# Return all cards to deck
 		for hand in [p1_hand, p2_hand, crib]:
 			self.deck.return_hand(hand)
 
 		return round
-
-
 
 	def score_hand(self, hand):
 		'''Given a Hand(), return a list with the total points score for the 
@@ -346,7 +349,8 @@ class Game(object):
 		return [num_score, breakdown]
 
 	def deal(self, p1_hand, p2_hand):
-		'''Given two Hand() onjects, deal six cards to each.'''
+		'''Deal six cards to each hand from the top of the deck, alternating 
+		between each player as you would deal cards in real life.'''
 		for i in range(1,13):
 			if i % 2 == 0:
 				p1_hand.add(self.deck.draw())
@@ -354,12 +358,34 @@ class Game(object):
 				p2_hand.add(self.deck.draw())
 		return
 
-	def crib(self, p1_hand, p2_hand, crib):
-		'''Given two hands of six cards and an empty crib, each hand discards 
-		two cards to the crib.'''
+	def the_crib(self, p1_hand, p2_hand, crib):
+		'''Each player looks at his six cards and discards two of them to the 
+		crib.'''
 		for hand in [p1_hand, p2_hand]:
 			hand.discard(crib)
 		return
+
+	def the_play(self, p1_hand, p2_hand):
+		'''The non-dealer (aka "pone") shows a card to begin the play and the 
+		dealer follows accordingly. The goal is to achieve running totals of 15 
+		and 31. 
+
+		If a player is unable to add a card without exceeding 31, he says "go" 
+		and his opponent "pegs" 1 point.
+		'''
+		p1_ranks, p2_ranks = sorted(p1_hand.ranks()), sorted(p2_hand.ranks())
+		print(p1_ranks)
+		
+		return
+
+	def the_show(self):
+		'''Game phase where each player scores their five cards (hand + starter)  
+		for fifteens, pairs, runs, etc. Hands are counted in order: non-dealer, 
+		dealer's hand, crib. This order is important near the end of the game, as 
+		the non-dealer has the opportunity to "count out" and win before the 
+		dealer has a chance to count, even though the dealer's total would have 
+		exceeded his opponent's score.
+		return'''
 
 
 if __name__ == '__main__':
