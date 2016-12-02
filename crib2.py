@@ -1,4 +1,4 @@
-from collections import namedtuple, Counter
+from collections import namedtuple, Counter, OrderedDict
 import random
 import itertools
 
@@ -224,7 +224,7 @@ class Game(object):
 		super(Game, self).__init__()
 		self.deck = Deck()
 		self.score = dict.fromkeys(['p1', 'p2'], 0) # Should this be a view?
-		self.history = []
+		self.history = OrderedDict()
 		self.winner = True in [self.score[p] >= 121 for p in self.score.keys()]
 
 	def run(self):
@@ -241,9 +241,10 @@ class Game(object):
 			round = self.round(round_num)
 			for p in self.score.keys():
 				self.score[p] += round[p]['score']
+			self.history[round_num] = round
 			round_num += 1
 		print(self.score)
-		print(self.winner)
+		print(self.history)
 
 	def round(self, round_num):
 		'''Plays a single round of cribbage. Deals two hands, discards to the 
@@ -375,7 +376,7 @@ class Game(object):
 		'''
 		p1_ranks, p2_ranks = sorted(p1_hand.ranks()), sorted(p2_hand.ranks())
 		print(p1_ranks)
-		
+
 		return
 
 	def the_show(self):
