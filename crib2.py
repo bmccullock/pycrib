@@ -51,14 +51,16 @@ class Deck(object):
 		return iter(self.cards)
 
 	def __len__(self):
-		'''Return number of cards in the deck'''
+		'''Return number of cards in the deck.'''
 		return len(self.cards)
 
 	def add(self, card):
+		'''Add a card to the end (bottom) of the deck.'''
 		self.cards.append(card)
 		return
 
 	def shuffle(self):
+		'''Shuffle the deck in place.'''
 		random.shuffle(self.cards)
 		return
 
@@ -78,7 +80,8 @@ class Deck(object):
 		return self.cards.pop(0)
 
 	def deal(self):
-		'''Return two hands of six cards.'''
+		'''Generate and return two hands of six cards by dealing in an alternating 
+		fashion, as you would in real life. Return both hands as a list.'''
 		hand1, hand2 = [], []
 		for i in range(1,13):
 			if i % 2 == 0:
@@ -135,6 +138,17 @@ class Hand(Deck):
 	def suits(self):
 		'''Return a list containing only suits of cards in hand.'''
 		return [c[1] for c in self.cards]
+
+	def values(self):
+		'''Return a list containing only the point values of cards in hand'''
+		values_list = []
+		for c in self.ranks():
+			if c > 10:
+				values_list.append(10)
+			else:
+				values_list.append(c)
+		return values_list
+
 	
 	def fifteens(self):
 		'''Return a list containing all card combinations that total 15. Since 
@@ -144,17 +158,10 @@ class Hand(Deck):
 		fifteens = []
 
 		for i in range(2, 5):
-			c = itertools.combinations(self.ranks(), i)
+			c = itertools.combinations(self.values(), i)
 			for combo in c:
-				adjusted = []
-				for i in combo:
-					if i in[11, 12, 13]:
-						adjusted.append(10)
-					else:
-						adjusted.append(i)
-
-				if sum(adjusted) == 15:
-					fifteens.append(adjusted)
+				if sum(combo) == 15:
+					fifteens.append(combo)
 		return fifteens
 
 	def flush(self):
@@ -216,7 +223,9 @@ class Hand(Deck):
 		
 
 class Game(object):
-	"""docstring for Game"""
+	"""Represents an entire game of cribbage between two players. A game consists 
+	of as many rounds as needed for one player to exceed the final score of 121.
+	"""
 
 	WINNING_SCORE = 121
 
@@ -243,8 +252,7 @@ class Game(object):
 				self.score[p] += round[p]['score']
 			self.history[round_num] = round
 			round_num += 1
-		print(self.score)
-		print(self.history)
+
 
 	def round(self, round_num):
 		'''Plays a single round of cribbage. Deals two hands, discards to the 
@@ -289,12 +297,9 @@ class Game(object):
 		p1_hand.cards.append(starter)
 		p2_hand.cards.append(starter)
 
-		# Score each hand and the crib
-		# print('P1: {}'.format(p1_hand))
-		# print('P2: {}'.format(p2_hand))
-		# print('Crib: {}'.format(crib))
-		# print()
-		# print('Starter: {}'.format(starter))
+		# The show
+		self.the_play(p1_hand, p2_hand)
+
 
 		# Save round to game history and update total score
 		p1_score = self.score_hand(p1_hand)
@@ -373,10 +378,43 @@ class Game(object):
 
 		If a player is unable to add a card without exceeding 31, he says "go" 
 		and his opponent "pegs" 1 point.
-		'''
-		p1_ranks, p2_ranks = sorted(p1_hand.ranks()), sorted(p2_hand.ranks())
-		print(p1_ranks)
 
+		** This requires that information about who is currently the dealer gets 
+		passed into the function
+
+		'''
+		play_score = [0, 0]
+
+		ranks = sorted(p1_hand.ranks()), sorted(p2_hand.ranks())
+
+		# run until there are no cards in either hand
+		total = 0
+		while len(ranks[0]) > 0 or len(ranks[1]) > 0:
+			for i in ranks:
+				if len(i) > 0:
+					if ranks.index(i) == 0:
+						print('Player 1 Cards: {}'.format(i))
+					else:
+						print('Player 2 Cards: {}'.format(i))
+					
+					if total + i[0] <= 31:
+						# Check each card against the total. If equals 15 or 31,
+						# choose that card
+						total += i[0]
+						print(i[0])
+						print('Total: {}'.format(total))
+						del i[0]
+
+						if total == 15:
+							play_score[ranks.index(i)] += 2
+							print('Fifteen for two.')
+						elif total == 31:
+							print('Total: {}'.format(total))
+							print('Thirty-one for two.')
+
+					else:
+						total = 0	
+		print(play_score)
 		return
 
 	def the_show(self):
