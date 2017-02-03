@@ -174,7 +174,7 @@ class Game(object):
 
 		'''
 		round_num = 1
-		print(self.winner)
+		
 		while (self.score['p1'] < 121) and (self.score['p2'] < 121):
 			
 			print('Round: {}'.format(round_num))
@@ -184,7 +184,7 @@ class Game(object):
 				self.score[p] += round[p]['score']
 			self.history[round_num] = round
 			round_num += 1
-
+		print(self.winner)
 
 	def round(self, round_num):
 		'''Plays a single round of cribbage. Deals two hands, discards to the 
@@ -338,6 +338,7 @@ class Game(object):
 							print('Thirty-one for two.')
 
 					else:
+						
 						total = 0	
 		print(play_score)
 		return
