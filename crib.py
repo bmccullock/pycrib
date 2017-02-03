@@ -264,22 +264,15 @@ class Game(object):
 		FLUSH:		4 pts for four of same suit in hand
 		HIS NOBS:	1 pt for jack matching suit of starter
 		'''
+		ev = Evaluator(hand)
 		breakdown = {
-			'fifteens': 0,
-			'pairs': 0,
-			'runs': 0,
+			'fifteens': 2 * len(ev.fifteens()),
+			'pairs': 2 * len(ev.pairs()),
+			'runs': sum([len(r) for r in ev.runs()]),
 			'flush': 0,
 			'nobs': 0
 		}
 
-		ev = Evaluator(hand) 
-
-		breakdown['fifteens'] += 2 * len(ev.fifteens())
-		breakdown['pairs'] += 2 * len(ev.pairs())
-
-		for run in ev.runs():
-			breakdown['runs'] += len(run)
-			
 		if ev.flush():
 			breakdown['flush'] += 4
 
