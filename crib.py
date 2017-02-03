@@ -2,6 +2,8 @@ from collections import namedtuple, Counter, OrderedDict
 import random
 import itertools
 
+from evaluator import Evaluator
+
 class Card(namedtuple('Card', ['rank', 'suit'])):
 	"""A tuple that represents a playing card in the form (RANK, SUIT)."""
 
@@ -149,76 +151,6 @@ class Hand(Deck):
 				values_list.append(c)
 		return values_list
 
-	
-	def fifteens(self):
-		'''Return a list containing all card combinations that total 15. Since 
-		cards are handled as int values, face cards will need to be converted to 
-		there point values of 10.
-		'''
-		fifteens = []
-
-		for i in range(2, 5):
-			c = itertools.combinations(self.values(), i)
-			for combo in c:
-				if sum(combo) == 15:
-					fifteens.append(combo)
-		return fifteens
-
-	def flush(self):
-		'''Return True if all cards in hand match by suit.'''
-		has_flush = False
-		for i in Counter(self.suits()).most_common(4):
-			if i[1] == 4 or i[1] == 5:
-				has_flush = True
-		return has_flush
-
-	def pairs(self):
-		'''Return a list containing all matching pairs (by rank)'''
-		return [c for c in itertools.combinations(self.ranks(), 2) if c[0] == c[1]]
-
-	def runs(self):
-		'''Return longest sequence of 3 or more cards.
-
-		TODO:
-			Adapt to handle Aces high or low
-		'''
-		poss_runs = []
-		ranks = [c.rank for c in self.cards]
-		for i in range(5, 2, -1):
-			combos = [sorted(list(set(c))) for c in itertools.combinations(ranks, i)]
-
-			for c in combos:
-				if len(c) >= i:
-					if len(c) == (c[-1] - c[0] + 1):
-						poss_runs.append(c)
-
-		fives = [r for r in poss_runs if len(r) == 5]
-		fours = [r for r in poss_runs if len(r) == 4]
-		threes = [r for r in poss_runs if len(r) == 3]
-
-		runs = []
-
-		if fives:
-			for run in fives:
-				runs.append(run)
-			pass
-		elif len(self.cards) >= 4 and fours:
-			for run in fours:
-				runs.append(run)
-			pass
-		elif threes:
-			for run in threes:
-				runs.append(run)
-			pass
-		return runs
-
-	def his_nobs(self, starter):
-		'''Return True if hand has JACK of same suit as starter card'''
-		for card in [c for c in self.cards if c.rank == 11]:
-			if card.suit == starter.suit:
-				return True
-		return False
-
 	__repr__ = __str__
 		
 
@@ -340,15 +272,15 @@ class Game(object):
 			'nobs': 0
 		}
 
-		breakdown['fifteens'] += 2 * len(hand.fifteens())
-		# score pairs
-		breakdown['pairs'] += 2 * len(hand.pairs())
-		# score runs
-		runs_list = hand.runs()
-		for run in runs_list:
+		ev = Evaluator(hand) 
+
+		breakdown['fifteens'] += 2 * len(ev.fifteens())
+		breakdown['pairs'] += 2 * len(ev.pairs())
+
+		for run in ev.runs():
 			breakdown['runs'] += len(run)
-		# score flush
-		if hand.flush():
+			
+		if ev.flush():
 			breakdown['flush'] += 4
 
 		num_score = sum([breakdown[key] for key in breakdown.keys()])
