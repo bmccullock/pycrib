@@ -10,6 +10,21 @@ class Evaluator(object):
 		super(Evaluator, self).__init__()
 		self.hand = hand_obj
 
+	def score(self):
+		breakdown = {
+			'fifteens': 2 * len(self.fifteens()),
+			'pairs': 2 * len(self.pairs()),
+			'runs': sum([len(r) for r in self.runs()]),
+			'flush': 0,
+			'nobs': 0
+		}
+
+		if self.flush():
+			breakdown['flush'] += 4
+
+		num_score = sum([breakdown[key] for key in breakdown.keys()])
+		return [num_score, breakdown]
+
 	def fifteens(self):
 		'''Return a list containing all card combinations that total 15. Since 
 		cards are handled as int values, face cards will need to be converted to 
