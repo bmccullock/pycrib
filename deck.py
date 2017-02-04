@@ -96,7 +96,8 @@ class Deck(object):
 		self.cards.extend(hand)
 
 class Hand(Deck):
-	"""docstring for Hand"""
+	"""A small Deck. Implements some methods for accessing cards as suits and
+	 values."""
 	def __init__(self):
 		super(Hand, self).__init__()
 		self.cards = []
